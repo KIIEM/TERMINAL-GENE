@@ -8,7 +8,6 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Courier New",monospace;}
 body{background:#050508;color:#fff;min-height:100vh;position:relative;overflow-x:hidden;}
 
-/* 扫描线 + 暗角 */
 .scanline{
   position:fixed;inset:0;pointer-events:none;z-index:9999;
   background:repeating-linear-gradient(
@@ -20,7 +19,6 @@ body{background:#050508;color:#fff;min-height:100vh;position:relative;overflow-x
   box-shadow:inset 0 0 120px rgba(0,0,0,0.75);
 }
 
-/* ========== 品牌过渡标题：独立样式，保留专属闪烁，不共用全局像素文字 ========== */
 .brand-transition{
   position:fixed;inset:0;z-index:10000;pointer-events:none;
   background:#050508;
@@ -57,16 +55,7 @@ body{background:#050508;color:#fff;min-height:100vh;position:relative;overflow-x
   54%{opacity:1;transform:translate(0);}
 }
 
-/* ==========【重点】全局普通文字：增强像素终端硬质感（品牌标题不受此影响） ========== */
-.machine h1:not(.brand-title),
-.subtitle,
-.card h3,
-.option,
-.btn,
-input,textarea,
-.form-actions,
-.ticket-img + .btn,
-.splash-logo:not(.brand-transition h2){
+.pixel-text{
   image-rendering:pixelated;
   font-smooth:never;
   -webkit-font-smoothing:none;
@@ -183,7 +172,6 @@ input[type="date"]::-webkit-datetime-edit,input[type="time"]::-webkit-datetime-e
 .upload-btn:hover{border-color:#ffd700;color:#ffd700;}
 .img-preview{
   width:100%;max-height:180px;object-fit:contain;border:2px solid #ff2a6d;border-radius:4px;display:none;
-  /* 预览照片关闭全局pixelated，保持原图清晰 */
   image-rendering:auto;
 }
 #pixelPreview{display:none !important;}
@@ -202,12 +190,23 @@ input[type="date"]::-webkit-datetime-edit,input[type="time"]::-webkit-datetime-e
 }
 #page-ticket .btn{width:100%;max-width:360px;}
 
+.audio-toggle{
+  position:fixed;top:18px;right:18px;z-index:10001;
+  background:#11070a;color:#ff2a6d;border:2px solid #ff2a6d;
+  padding:10px 14px;cursor:pointer;
+  font-size:14px;letter-spacing:1px;
+  box-shadow:0 0 12px rgba(255,42,109,0.4);
+}
+.audio-toggle.muted{opacity:0.6;}
+
 @media(max-width:480px){.options{grid-template-columns:1fr;}.form-actions{flex-direction:column;}}
 </style>
 </head>
 <body>
 <div class="scanline"></div>
 <div class="vignette"></div>
+
+<button class="audio-toggle" id="audioToggle">MUTE</button>
 
 <div class="brand-transition" id="brandTransition">
   <h2>ODYSSEY RêVERIE</h2>
@@ -322,7 +321,6 @@ document.getElementById('btn-notsure').onclick = function(){
 };
 document.getElementById('btn-back').onclick = ()=>transitionTo('page-start');
 
-// ==========【修复1】图片上传预览：原生清晰图，不再强制马赛克，直接关闭旧像素画布逻辑 ==========
 let attachImg = null;
 const fileInput = document.getElementById('img-file');
 const previewImg = document.getElementById('preview-img');
@@ -344,10 +342,7 @@ fileInput.onchange = function(e){
   }
   reader.readAsDataURL(file);
 }
-// 移除全局降采样马赛克函数
-// function createPixelImage(...) {} 已废弃
 
-// ==========【修复2】PC端 date / time 点击打不开，增加 showPicker() 兼容唤起 ==========
 const dateInput = document.getElementById('date-val');
 const timeInput = document.getElementById('time-val');
 function openPicker(inputEl){
@@ -363,7 +358,6 @@ timeInput.addEventListener('click',()=>openPicker(timeInput));
 dateInput.addEventListener('focus',()=>openPicker(dateInput));
 timeInput.addEventListener('focus',()=>openPicker(timeInput));
 
-// ==========【修复3】票据生成：文字保留像素终端质感；上传照片直接原图绘制、不做马赛克降采样 ==========
 function generateTicket(time,project,note,attachImg){
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -373,16 +367,13 @@ function generateTicket(time,project,note,attachImg){
   canvas.height = h;
   const cx = w / 2;
 
-  // 基础票据底色
   ctx.fillStyle = '#fffef2';
   ctx.fillRect(0, 0, w, h);
 
-  // 外边框
   ctx.strokeStyle = '#222';
   ctx.lineWidth = 6;
   ctx.strokeRect(4, 4, w - 8, h - 8);
 
-  // 顶部品牌条
   ctx.fillStyle = '#ff2a6d';
   ctx.fillRect(4, 4, w - 8, 48);
   ctx.fillStyle = '#fff';
@@ -390,7 +381,6 @@ function generateTicket(time,project,note,attachImg){
   ctx.textAlign = 'center';
   ctx.fillText('ODYSSEY RêVERIE', cx, 35);
 
-  // 顶部分隔虚线
   ctx.beginPath();
   ctx.setLineDash([6, 4]);
   ctx.moveTo(30, 70);
@@ -400,7 +390,6 @@ function generateTicket(time,project,note,attachImg){
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // 左右圆形缺口
   ctx.fillStyle = '#050508';
   ctx.beginPath();
   ctx.arc(0, 250, 22, 0, Math.PI * 2);
@@ -409,17 +398,15 @@ function generateTicket(time,project,note,attachImg){
   ctx.arc(w, 250, 22, 0, Math.PI * 2);
   ctx.fill();
 
-  // 标题区
   ctx.fillStyle = '#ff2a6d';
   ctx.font = 'bold 28px Courier New';
   ctx.textAlign = 'center';
-  ctx.fillText('BOARDING PASS', cx, 115);
+  ctx.fillText('RESERVATION', cx, 115);
 
   ctx.font = '14px Courier New';
   ctx.fillStyle = '#666';
   ctx.fillText('— 预约凭证 —', cx, 138);
 
-  // ===== 信息区排版 =====
   ctx.textAlign = 'center';
   const startY = 188;
   const labelHeight = 20;
@@ -427,7 +414,6 @@ function generateTicket(time,project,note,attachImg){
   const rowGap = 62;
   const dividerOffset = 16;
 
-  // DATE & TIME
   let currentY = startY;
   ctx.fillStyle = '#888';
   ctx.font = '13px Courier New';
@@ -442,7 +428,6 @@ function generateTicket(time,project,note,attachImg){
   ctx.lineWidth = 1;
   ctx.stroke();
 
-  // PROJECT
   currentY += rowGap;
   ctx.fillStyle = '#888';
   ctx.font = '13px Courier New';
@@ -457,7 +442,6 @@ function generateTicket(time,project,note,attachImg){
   ctx.lineWidth = 1;
   ctx.stroke();
 
-  // REMARKS 区域
   currentY += rowGap;
   ctx.fillStyle = '#888';
   ctx.font = '13px Courier New';
@@ -482,7 +466,6 @@ function generateTicket(time,project,note,attachImg){
   ctx.fillText(line, cx, noteDrawY);
   noteDrawY += 24;
 
-  // ==========【票据图片：原图直接绘制，不做马赛克降采样】 ==========
   if(attachImg){
     const imgMaxW = w - 100;
     const imgMaxH = 130;
@@ -494,14 +477,12 @@ function generateTicket(time,project,note,attachImg){
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(attachImg, dx, noteDrawY, dw, dh);
 
-    // 保留粉色边框
     ctx.strokeStyle = '#ff2a6d';
     ctx.lineWidth = 2;
     ctx.strokeRect(dx, noteDrawY, dw, dh);
     noteDrawY += dh + 12;
   }
 
-  // 底部分隔虚线
   ctx.beginPath();
   ctx.setLineDash([6, 4]);
   ctx.moveTo(30, h - 80);
@@ -511,7 +492,6 @@ function generateTicket(time,project,note,attachImg){
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // 底部文字
   ctx.fillStyle = '#666';
   ctx.font = '12px Courier New';
   ctx.textAlign = 'center';
@@ -534,6 +514,148 @@ document.getElementById('btn-submit').onclick = function(){
 };
 
 document.getElementById('btn-restart').onclick = ()=>transitionTo('page-start');
+
+// ========== 4段循环｜降速慢版 8bit梦幻琶音 A→B→C→D ==========
+const AudioSystem = (() => {
+  let unlocked = false;
+  let muted = false;
+  let ctx = null;
+
+  let mainGain;
+  let filter;
+  let arpInterval;
+  let noteIndex = 0;
+  let beatCount = 0;
+  let segmentIndex = 0;
+  const BEAT_PER_SEGMENT = 16;
+  const TICK_SPEED = 260; // 更慢：260ms/一拍，松弛梦幻
+
+  // 四段和弦序列
+  const segments = [
+    [261.63, 329.63, 392.00, 493.88],  // A: Cmaj7
+    [220.00, 261.63, 329.63, 392.00],  // B: Am7
+    [174.61, 261.63, 349.23, 436.00],  // C: Fmaj7
+    [196.00, 261.63, 392.00, 440.00]   // D: G7sus4
+  ];
+
+  const clickSFX = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbs2tg4KbW1/hqKlEUFOQoKt9f/yEhBAAH+fv9BAAAgH9+AAD/');
+  const transSFX = new Audio('data:audio/wav;base64,UklGRp4GAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQsGAACChYqFbF1fdJivrJBhNjVgodDbs2tg4KbW1/hqKlEUFOQoKt9f/yEhBAAH+fv9BAAAgH9+AAD/');
+
+  function initAudioContext(){
+    if(ctx) return;
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    mainGain = ctx.createGain();
+    mainGain.gain.value = 0.22;
+
+    filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 1000;
+    filter.Q.value = 0.8;
+
+    mainGain.connect(filter);
+    filter.connect(ctx.destination);
+  }
+
+  function startArpLoop(){
+    if(!ctx) return;
+    stopArpLoop();
+    noteIndex = 0;
+    beatCount = 0;
+    segmentIndex = 0;
+
+    const tick = () => {
+      // 每8拍切换下一段，4段循环
+      if(beatCount >= BEAT_PER_SEGMENT){
+        beatCount = 0;
+        segmentIndex = (segmentIndex + 1) % segments.length;
+      }
+      const currentLoop = segments[segmentIndex];
+
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = currentLoop[noteIndex % currentLoop.length];
+
+      g.gain.setValueAtTime(0, ctx.currentTime);
+      g.gain.linearRampToValueAtTime(0.28, ctx.currentTime + 0.015);
+      g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.26);
+
+      osc.connect(g);
+      g.connect(mainGain);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.28);
+
+      noteIndex++;
+      beatCount++;
+    };
+
+    arpInterval = setInterval(tick, TICK_SPEED);
+  }
+  function stopArpLoop(){
+    clearInterval(arpInterval);
+  }
+
+  function unlock(){
+    if(unlocked) return;
+    unlocked = true;
+    initAudioContext();
+    if(!muted) startArpLoop();
+  }
+
+  function playClick(){
+    if(muted) return;
+    clickSFX.volume = 0.18;
+    clickSFX.currentTime = 0;
+    clickSFX.play().catch(()=>{});
+  }
+  function playTransition(){
+    if(muted) return;
+    transSFX.volume = 0.22;
+    transSFX.currentTime = 0;
+    transSFX.play().catch(()=>{});
+  }
+
+  function toggleMute(){
+    muted = !muted;
+    if(muted){
+      if(mainGain) mainGain.gain.value = 0;
+      stopArpLoop();
+    }else{
+      if(mainGain) mainGain.gain.value = 0.22;
+      if(unlocked) startArpLoop();
+    }
+    return muted;
+  }
+
+  return {
+    init:()=>{},
+    unlock,
+    playClick,
+    playTransition,
+    toggle:toggleMute
+  };
+})();
+
+document.getElementById('audioToggle').onclick = function(){
+  AudioSystem.unlock();
+  const isMuted = AudioSystem.toggle();
+  this.textContent = isMuted ? 'UNMUTE' : 'MUTE';
+  this.classList.toggle('muted', isMuted);
+};
+
+document.querySelectorAll('.btn, .option, .upload-btn').forEach(el=>{
+  el.addEventListener('click',()=>{
+    AudioSystem.unlock();
+    AudioSystem.playClick();
+  });
+});
+
+const originalTransitionTo = transitionTo;
+transitionTo = function(pageId,callback){
+  AudioSystem.unlock();
+  AudioSystem.playTransition();
+  originalTransitionTo(pageId,callback);
+};
 </script>
 </body>
 </html>
