@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0" />
 <title>ODYSSEY RêVERIE · 预约终端</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:"Courier New",monospace;image-rendering:pixelated;}
+*{margin:0;padding:0;box-sizing:border-box;font-family:"Courier New",monospace;}
 body{background:#050508;color:#fff;min-height:100vh;position:relative;overflow-x:hidden;}
 
+/* 扫描线 + 暗角 */
 .scanline{
   position:fixed;inset:0;pointer-events:none;z-index:9999;
   background:repeating-linear-gradient(
@@ -19,6 +20,7 @@ body{background:#050508;color:#fff;min-height:100vh;position:relative;overflow-x
   box-shadow:inset 0 0 120px rgba(0,0,0,0.75);
 }
 
+/* ========== 品牌过渡标题：独立样式，保留专属闪烁，不共用全局像素文字 ========== */
 .brand-transition{
   position:fixed;inset:0;z-index:10000;pointer-events:none;
   background:#050508;
@@ -55,11 +57,29 @@ body{background:#050508;color:#fff;min-height:100vh;position:relative;overflow-x
   54%{opacity:1;transform:translate(0);}
 }
 
+/* ==========【重点】全局普通文字：增强像素终端硬质感（品牌标题不受此影响） ========== */
+.machine h1:not(.brand-title),
+.subtitle,
+.card h3,
+.option,
+.btn,
+input,textarea,
+.form-actions,
+.ticket-img + .btn,
+.splash-logo:not(.brand-transition h2){
+  image-rendering:pixelated;
+  font-smooth:never;
+  -webkit-font-smoothing:none;
+}
+
 .btn{
   background:#11070a;color:#ff2a6d;border:3px solid #ff2a6d;
-  padding:14px 22px;font-size:16px;cursor:pointer;letter-spacing:1px;
+  padding:14px 22px;font-size:16px;cursor:pointer;letter-spacing:2px;
   text-shadow:0 0 6px rgba(255,42,109,0.6);
   box-shadow:0 0 8px rgba(255,42,109,0.3),inset 0 0 8px rgba(255,42,109,0.1);
+  font-family:"Courier New",monospace;
+  font-weight:bold;
+  text-transform:uppercase;
 }
 .btn:hover{background:#ff2a6d;color:#000;text-shadow:none;box-shadow:0 0 16px rgba(255,42,109,0.8);}
 .btn:active{transform:scale(0.96);}
@@ -118,7 +138,10 @@ body{background:#050508;color:#fff;min-height:100vh;position:relative;overflow-x
 .machine::before{top:-3px;left:-3px;border-right:none;border-bottom:none;}
 .machine::after{bottom:-3px;right:-3px;border-left:none;border-top:none;}
 .machine h1{color:#ff2a6d;font-size:18px;margin-bottom:8px;letter-spacing:2px;text-shadow:0 0 10px rgba(255,42,109,0.8);}
-.machine .subtitle{color:#ff2a6d88;font-size:12px;margin-bottom:30px;letter-spacing:3px;}
+.machine .subtitle{
+  color:#ff2a6d88;font-size:12px;margin-bottom:30px;letter-spacing:3px;
+  font-family:"Courier New",monospace;font-weight:bold;text-transform:uppercase;
+}
 .machine .btn{width:100%;margin-bottom:16px;font-size:17px;padding:16px;}
 
 #page-form{
@@ -130,15 +153,20 @@ body{background:#050508;color:#fff;min-height:100vh;position:relative;overflow-x
   background:#0a0a18;border:3px solid #ff2a6d;border-radius:4px;padding:16px;margin-bottom:16px;overflow:hidden;
   box-shadow:0 0 12px rgba(255,42,109,0.25),inset 0 0 12px rgba(255,42,109,0.05);position:relative;
 }
-.card h3{color:#ff2a6d;font-size:16px;margin-bottom:12px;letter-spacing:1px;text-shadow:0 0 6px rgba(255,42,109,0.6);}
+.card h3{
+  color:#ff2a6d;font-size:16px;margin-bottom:12px;letter-spacing:2px;text-shadow:0 0 6px rgba(255,42,109,0.6);
+  font-family:"Courier New",monospace;font-weight:bold;text-transform:uppercase;
+}
 input,textarea{
   width:calc(100% - 20px);margin:0 auto 8px auto;display:block;background:#000;border:2px solid #ff2a6d;color:#ff2a6d;padding:10px;font-size:16px;outline:none;text-align:center;box-sizing:border-box;text-shadow:0 0 4px rgba(255,42,109,0.5);box-shadow:inset 0 0 8px rgba(255,42,109,0.15);
+  font-family:"Courier New",monospace;font-weight:bold;letter-spacing:1px;
 }
 input:focus,textarea:focus{border-color:#ffd700;box-shadow:0 0 10px rgba(255,215,0,0.5),inset 0 0 8px rgba(255,215,0,0.1);}
 input[type="date"]::-webkit-datetime-edit,input[type="time"]::-webkit-datetime-edit{text-align:center;width:100%;}
 .options{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .option{
   border:2px solid #ff2a6d;padding:12px;text-align:center;cursor:pointer;color:#ff2a6d;background:#11070a;font-size:15px;display:flex;align-items:center;justify-content:center;min-height:50px;box-sizing:border-box;text-shadow:0 0 4px rgba(255,42,109,0.5);transition:all 0.1s;
+  font-family:"Courier New",monospace;font-weight:bold;text-transform:uppercase;letter-spacing:1px;
 }
 .option:hover{border-color:#ffd700;color:#ffd700;text-shadow:0 0 8px rgba(255,215,0,0.8);}
 .option.selected{background:#ff2a6d;color:#000;font-weight:bold;text-shadow:none;box-shadow:0 0 12px rgba(255,42,109,0.8);}
@@ -150,11 +178,15 @@ input[type="date"]::-webkit-datetime-edit,input[type="time"]::-webkit-datetime-e
 .upload-btn{
   width:100%;background:#11070a;color:#ff2a6d;border:2px dashed #ff2a6d;
   padding:12px;text-align:center;cursor:pointer;display:block;margin-bottom:10px;
+  font-family:"Courier New",monospace;font-weight:bold;text-transform:uppercase;letter-spacing:1px;
 }
 .upload-btn:hover{border-color:#ffd700;color:#ffd700;}
 .img-preview{
   width:100%;max-height:180px;object-fit:contain;border:2px solid #ff2a6d;border-radius:4px;display:none;
+  /* 预览照片关闭全局pixelated，保持原图清晰 */
+  image-rendering:auto;
 }
+#pixelPreview{display:none !important;}
 
 #page-ticket{
   display:none;flex-direction:column;align-items:center;justify-content:center;
@@ -165,7 +197,8 @@ input[type="date"]::-webkit-datetime-edit,input[type="time"]::-webkit-datetime-e
 }
 #page-ticket.active{display:flex;}
 .ticket-img{
-  width:100%;max-width:360px;border:5px solid #ff2a6d;box-shadow:0 0 24px rgba(255,42,109,0.6);margin-bottom:20px;image-rendering:auto;
+  width:100%;max-width:360px;border:5px solid #ff2a6d;box-shadow:0 0 24px rgba(255,42,109,0.6);margin-bottom:20px;
+  image-rendering:auto;
 }
 #page-ticket .btn{width:100%;max-width:360px;}
 
@@ -289,7 +322,7 @@ document.getElementById('btn-notsure').onclick = function(){
 };
 document.getElementById('btn-back').onclick = ()=>transitionTo('page-start');
 
-// 图片上传 + 像素化预览
+// ==========【修复1】图片上传预览：原生清晰图，不再强制马赛克，直接关闭旧像素画布逻辑 ==========
 let attachImg = null;
 const fileInput = document.getElementById('img-file');
 const previewImg = document.getElementById('preview-img');
@@ -306,63 +339,31 @@ fileInput.onchange = function(e){
       attachImg = img;
       previewImg.src = ev.target.result;
       previewImg.style.display = 'block';
-      renderPixelPreview(img);
+      pixelPreview.style.display = 'none';
     };
   }
   reader.readAsDataURL(file);
 }
+// 移除全局降采样马赛克函数
+// function createPixelImage(...) {} 已废弃
 
-// 像素化预览：降低分辨率，增强像素终端感
-function renderPixelPreview(img){
-  const canvas = pixelPreview;
-  const ctx = canvas.getContext('2d');
-  const size = 160;
-  const pixelSize = 8;
-
-  canvas.width = size;
-  canvas.height = size;
-
-  const temp = document.createElement('canvas');
-  const tempCtx = temp.getContext('2d');
-  temp.width = size / pixelSize;
-  temp.height = size / pixelSize;
-
-  tempCtx.drawImage(img,0,0,temp.width,temp.height);
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(temp,0,0,temp.width,temp.height,0,0,size,size);
-
-  pixelPreview.style.display = 'block';
-  previewImg.style.display = 'none';
+// ==========【修复2】PC端 date / time 点击打不开，增加 showPicker() 兼容唤起 ==========
+const dateInput = document.getElementById('date-val');
+const timeInput = document.getElementById('time-val');
+function openPicker(inputEl){
+  inputEl.focus();
+  try{
+    if(typeof inputEl.showPicker === 'function'){
+      inputEl.showPicker();
+    }
+  }catch(e){}
 }
+dateInput.addEventListener('click',()=>openPicker(dateInput));
+timeInput.addEventListener('click',()=>openPicker(timeInput));
+dateInput.addEventListener('focus',()=>openPicker(dateInput));
+timeInput.addEventListener('focus',()=>openPicker(timeInput));
 
-// 像素化图片辅助函数
-function createPixelImage(img, maxSize=120){
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-
-  const w = img.width;
-  const h = img.height;
-  const ratio = Math.min(maxSize/w, maxSize/h);
-
-  const pixelW = Math.floor(w * ratio / 6) || 1;
-  const pixelH = Math.floor(h * ratio / 6) || 1;
-
-  canvas.width = w * ratio;
-  canvas.height = h * ratio;
-
-  const temp = document.createElement('canvas');
-  temp.width = pixelW;
-  temp.height = pixelH;
-
-  const tempCtx = temp.getContext('2d');
-  tempCtx.drawImage(img,0,0,pixelW,pixelH);
-
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(temp,0,0,pixelW,pixelH,0,0,canvas.width,canvas.height);
-
-  return canvas;
-}
-
+// ==========【修复3】票据生成：文字保留像素终端质感；上传照片直接原图绘制、不做马赛克降采样 ==========
 function generateTicket(time,project,note,attachImg){
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -481,25 +482,22 @@ function generateTicket(time,project,note,attachImg){
   ctx.fillText(line, cx, noteDrawY);
   noteDrawY += 24;
 
-  // 附件图片：像素化 + 细粉色边框
+  // ==========【票据图片：原图直接绘制，不做马赛克降采样】 ==========
   if(attachImg){
-    const pixelImg = createPixelImage(attachImg, 130);
-
     const imgMaxW = w - 100;
     const imgMaxH = 130;
-    const ratio = Math.min(imgMaxW / pixelImg.width, imgMaxH / pixelImg.height);
-    const dw = pixelImg.width * ratio;
-    const dh = pixelImg.height * ratio;
+    const ratio = Math.min(imgMaxW / attachImg.width, imgMaxH / attachImg.height);
+    const dw = attachImg.width * ratio;
+    const dh = attachImg.height * ratio;
     const dx = (w - dw) / 2;
 
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(pixelImg, dx, noteDrawY, dw, dh);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(attachImg, dx, noteDrawY, dw, dh);
 
-    // 细粉色边框
+    // 保留粉色边框
     ctx.strokeStyle = '#ff2a6d';
     ctx.lineWidth = 2;
     ctx.strokeRect(dx, noteDrawY, dw, dh);
-
     noteDrawY += dh + 12;
   }
 
