@@ -18,10 +18,6 @@ body{
   overflow:hidden;
   height:100vh;
 }
-.pixel-border{
-  border:4px solid #ff2a6d;
-  box-shadow:0 0 10px #ff2a6d, inset 0 0 18px rgba(255,42,109,0.25);
-}
 .pixel-btn{
   background:#11070a;
   color:#ff2a6d;
@@ -79,7 +75,6 @@ body{
   box-shadow:0 0 10px #ff2a6d;
   animation:loadingBar 2.4s ease-out forwards;
 }
-/* 绑定 animationend 事件 */
 @keyframes loadingBar{
   0%{width:0%;}
   100%{width:100%;}
@@ -396,65 +391,19 @@ const showPage = id => {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   $$(`#${id}`).classList.add('active');
 };
-// 音效函数：仅点击交互时调用
-const playBeep = () => {
-  try{
-    const a = new AudioContext();
-    const o = a.createOscillator();
-    const g = a.createGain();
-    o.connect(g);
-    g.connect(a.destination);
-    o.type = "square";
-    o.frequency.value = 880;
-    g.gain.value = 0.08;
-    o.start();
-    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 0.1);
-    o.stop(a.currentTime + 0.1);
-  }catch(e){}
-};
-const playClick = () => {
-  try{
-    const a = new AudioContext();
-    const o = a.createOscillator();
-    const g = a.createGain();
-    o.connect(g);
-    g.connect(a.destination);
-    o.type = "square";
-    o.frequency.value = 440;
-    g.gain.value = 0.06;
-    o.start();
-    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 0.05);
-    o.stop(a.currentTime + 0.05);
-  }catch(e){}
-};
-const playPrint = () => {
-  try{
-    const a = new AudioContext();
-    const now = a.currentTime;
-    for(let i=0;i<8;i++){
-      const o = a.createOscillator();
-      const g = a.createGain();
-      o.connect(g);
-      g.connect(a.destination);
-      o.type = "square";
-      o.frequency.value = 220 + i*30;
-      g.gain.value = 0.04;
-      o.start(now + i*0.08);
-      g.gain.exponentialRampToValueAtTime(0.001, now + i*0.08 + 0.07);
-      o.stop(now + i*0.08 + 0.07);
-    }
-  }catch(e){}
-};
-// ==========【修复关键点】监听动画结束事件，不再硬写setTimeout ==========
-const fillBar = $$('.loading-fill');
-fillBar.addEventListener('animationend', function onAnimEnd(){
+
+// ✅ 修复重点：布尔锁 + setTimeout兜底，不再依赖animationend
+let loadingFired = false;
+function goToStartPage(){
+  if(loadingFired) return;
+  loadingFired = true;
   showPage('page-start');
-  fillBar.removeEventListener('animationend', onAnimEnd); // 防止重复触发
-});
+}
+// 和动画时长对齐：2400ms
+setTimeout(goToStartPage, 2400);
 
 const btnNotSure = $$('#btn-notsure');
 btnNotSure.onclick = () => {
-  playClick();
   const wrap = btnNotSure.parentElement;
   const w = wrap.clientWidth - btnNotSure.offsetWidth;
   const h = wrap.clientHeight - btnNotSure.offsetHeight;
@@ -465,7 +414,6 @@ btnNotSure.onclick = () => {
   btnNotSure.style.top = y + 'px';
 };
 $$('#btn-go').onclick = () => {
-  playBeep();
   $$('.terminal-machine').classList.add('glitch');
   setTimeout(() => {
     $$('.terminal-machine').classList.remove('glitch');
@@ -474,18 +422,15 @@ $$('#btn-go').onclick = () => {
 };
 document.querySelectorAll('.item-option').forEach(el => {
   el.onclick = () => {
-    playClick();
     document.querySelectorAll('.item-option').forEach(i => i.classList.remove('active'));
     el.classList.add('active');
     $$('#project-val').value = el.dataset.val;
   };
 });
 $$('#btn-back').onclick = () => {
-  playClick();
   showPage('page-start');
 };
 $$('#btn-submit').onclick = () => {
-  playPrint();
   const date = $$('#date-val').value || '未选择';
   const time = $$('#time-val').value || '未选择';
   const proj = $$('#project-val').value || '未选择';
@@ -496,7 +441,6 @@ $$('#btn-submit').onclick = () => {
   showPage('page-ticket');
 };
 $$('#btn-download').onclick = async () => {
-  playClick();
   const card = $$('#ticket-card');
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
