@@ -79,6 +79,7 @@ body{
   box-shadow:0 0 10px #ff2a6d;
   animation:loadingBar 2.4s ease-out forwards;
 }
+/* 绑定 animationend 事件 */
 @keyframes loadingBar{
   0%{width:0%;}
   100%{width:100%;}
@@ -395,7 +396,7 @@ const showPage = id => {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   $$(`#${id}`).classList.add('active');
 };
-// === 音效函数：只在【用户点击交互】时调用，加载阶段绝不执行 ===
+// 音效函数：仅点击交互时调用
 const playBeep = () => {
   try{
     const a = new AudioContext();
@@ -444,10 +445,12 @@ const playPrint = () => {
     }
   }catch(e){}
 };
-// 🔥【最重要改动：定时器里只做页面跳转！不再自动播放音效！】
-setTimeout(() => {
+// ==========【修复关键点】监听动画结束事件，不再硬写setTimeout ==========
+const fillBar = $$('.loading-fill');
+fillBar.addEventListener('animationend', function onAnimEnd(){
   showPage('page-start');
-}, 2500);
+  fillBar.removeEventListener('animationend', onAnimEnd); // 防止重复触发
+});
 
 const btnNotSure = $$('#btn-notsure');
 btnNotSure.onclick = () => {
