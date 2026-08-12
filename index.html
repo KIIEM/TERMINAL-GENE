@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>TERMINAL · 登机预约终端</title>
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:"Courier New",monospace;
+  image-rendering:pixelated;
+}
+body{
+  background:#050508;
+  color:#fff;
+  overflow:hidden;
+  height:100vh;
+}
+
+/* ========== 全局像素工具 ========== */
+.pixel-border{
+  border:4px solid #ff2a6d;
+  box-shadow:0 0 10px #ff2a6d, inset 0 0 18px rgba(255,42,109,0.25);
+}
+.pixel-btn{
+  background:#11070a;
+  color:#ff2a6d;
+  border:3px solid #ff2a6d;
+  padding:14px 22px;
+  font-size:16px;
+  cursor:pointer;
+  transition:0.1s;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+.pixel-btn:hover{
+  background:#ff2a6d;
+  color:#000;
+}
+.pixel-btn:active{
+  transform:scale(0.96);
+}
+
+/* ========== 页面容器 ========== */
+.page{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  display:none;
+}
+.page.active{
+  display:block;
+}
+
+/* ========== 加载页 ========== */
+#page-loading{
+  background:#050508;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+}
+.loading-text{
+  color:#ff2a6d;
+  font-size:18px;
+  margin-bottom:20px;
+  text-shadow:0 0 8px #ff2a6d;
+}
+.loading-bar{
+  width:240px;
+  height:12px;
+  background:#111;
+  border:2px solid #ff2a6d;
+  overflow:hidden;
+}
+.loading-fill{
+  width:0%;
+  height:100%;
+  background:#ff2a6d;
+  box-shadow:0 0 10px #ff2a6d;
+  animation:loadingBar 2.4s ease-out forwards;
+}
+@keyframes loadingBar{
+  0%{width:0%;}
+  100%{width:100%;}
+}
+.pixel-logo{
+  font-size:26px;
+  color:#ff2a6d;
+  text-shadow:0 0 12px #ff2a6d;
+  margin-bottom:30px;
+  letter-spacing:2px;
+}
+
+/* ========== 开场页：TERMINAL 机场自助机 ========== */
+#page-start{
+  background:#222;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:12px;
+}
+.jwa-bg{
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(rgba(10,10,20,0.92), rgba(5,5,10,0.98)),
+    repeating-linear-gradient(0deg, #ff2a6d18 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(90deg, #ff2a6d18 0 1px, transparent 1px 4px);
+  z-index:1;
+}
+.jwa-bg::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 12% 16%, #ff2a6d 0 8px, transparent 9px),
+    radial-gradient(circle at 88% 12%, #ff2a6d 0 6px, transparent 7px),
+    radial-gradient(circle at 50% 8%, #ffd700 0 10px, transparent 11px),
+    radial-gradient(circle at 20% 90%, #00f5d4 0 7px, transparent 8px),
+    radial-gradient(circle at 80% 88%, #00f5d4 0 7px, transparent 8px);
+  opacity:0.85;
+}
+.terminal-machine{
+  position:relative;
+  z-index:2;
+  width:100%;
+  height:75vh;
+  max-width:420px;
+  background:#080812;
+  border:8px solid #ff2a6d;
+  border-radius:12px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  box-shadow:0 0 20px #ff2a6d;
+}
+.screen-title{
+  color:#ff2a6d;
+  font-size:20px;
+  margin-bottom:32px;
+  text-align:center;
+  text-shadow:0 0 8px #ff2a6d;
+  letter-spacing:1px;
+}
+.btn-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+  width:80%;
+  position:relative;
+}
+#btn-go{
+  padding:18px;
+  font-size:18px;
+  background:#ff2a6d;
+  color:#000;
+  font-weight:bold;
+}
+#btn-go:hover{
+  background:#ff4d8a;
+}
+#btn-notsure{
+  position:relative;
+  padding:18px;
+  font-size:16px;
+}
+
+/* ========== 表单主页 ========== */
+#page-form{
+  padding:20px;
+  overflow-y:auto;
+  height:100vh;
+  background:#050508;
+}
+.form-card{
+  background:#0a0a18;
+  margin-bottom:16px;
+  padding:18px;
+  border:3px solid #ff2a6d;
+  border-radius:8px;
+  box-shadow:0 0 12px rgba(255,42,109,0.35);
+}
+.form-card h3{
+  color:#ff2a6d;
+  margin-bottom:12px;
+  font-size:16px;
+  text-shadow:0 0 6px #ff2a6d;
+}
+input,textarea,select{
+  width:100%;
+  background:#000;
+  border:2px solid #ff2a6d;
+  color:#ff2a6d;
+  padding:10px;
+  font-size:16px;
+  outline:none;
+}
+input:focus,textarea:focus,select:focus{
+  border-color:#ffd700;
+  box-shadow:0 0 8px #ffd700;
+}
+.item-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.item-option{
+  border:2px solid #ff2a6d88;
+  padding:10px;
+  text-align:center;
+  cursor:pointer;
+  color:#ff2a6d;
+  background:#11070a;
+  transition:0.15s;
+}
+.item-option:hover{
+  border-color:#ffd700;
+  color:#ffd700;
+}
+.item-option.active{
+  background:#ff2a6d;
+  color:#000;
+  font-weight:bold;
+  box-shadow:0 0 10px #ff2a6d;
+}
+.bottom-actions{
+  display:flex;
+  gap:12px;
+  margin-top:24px;
+}
+
+/* ========== 登机牌页 ========== */
+#page-ticket{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  background:#050508;
+}
+.ticket{
+  background:#fffef2;
+  color:#111;
+  width:100%;
+  max-width:360px;
+  padding:24px;
+  border:6px solid #222;
+  box-shadow:0 0 16px #ff2a6d;
+  position:relative;
+}
+.ticket::before{
+  content:"✈ TERMINAL AIRWAYS";
+  display:block;
+  text-align:center;
+  font-size:13px;
+  color:#ff2a6d;
+  font-weight:bold;
+  margin-bottom:12px;
+  letter-spacing:1px;
+}
+.ticket h2{
+  text-align:center;
+  border-bottom:2px dashed #444;
+  padding-bottom:12px;
+  margin-bottom:16px;
+  font-size:22px;
+  color:#ff2a6d;
+}
+.ticket-line{
+  margin:10px 0;
+  font-size:15px;
+  font-family:"Courier New",monospace;
+}
+.ticket-line span{
+  color:#ff2a6d;
+  font-weight:bold;
+}
+.print-anim{
+  animation:print 1.2s ease-out;
+}
+@keyframes print{
+  0%{transform:translateY(-80px);opacity:0;}
+  100%{transform:translateY(0);opacity:1;}
+}
+.download-btn{
+  margin-top:18px;
+  width:100%;
+}
+
+/* ========== Glitch 动画｜弱故障版本 ========== */
+.glitch{
+  animation:glitch 0.24s steps(6);
+}
+@keyframes glitch{
+  0%{transform:translate(0);}
+  20%{transform:translate(-1px, 1px);}
+  40%{transform:translate(-1px, -1px);}
+  60%{transform:translate(1px, 1px);}
+  80%{transform:translate(1px, -1px);}
+  100%{transform:translate(0);}
+}
+.scanline{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255,42,109,0.04) 2px,
+    rgba(255,42,109,0.04) 4px
+  );
+  z-index:998;
+}
+.crt-flicker{
+  animation:flicker 3s infinite;
+}
+@keyframes flicker{
+  0%,100%{opacity:1;}
+  50%{opacity:0.98;}
+  75%{opacity:1;}
+}
+
+/* ========== 响应式 ========== */
+@media(max-width:480px){
+  .terminal-machine{
+    height:72vh;
+    padding:18px;
+  }
+  .screen-title{
+    font-size:18px;
+  }
+  .item-grid{
+    grid-template-columns:1fr;
+  }
+  .bottom-actions{
+    flex-direction:column;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="scanline"></div>
+
+<!-- 页面1｜加载页 -->
+<section id="page-loading" class="page active">
+  <div class="pixel-logo">TERMINAL</div>
+  <div class="loading-text">正在启动登机系统...</div>
+  <div class="loading-bar">
+    <div class="loading-fill"></div>
+  </div>
+</section>
+
+<!-- 页面2｜机场自助机开场 -->
+<section id="page-start" class="page">
+  <div class="jwa-bg crt-flicker"></div>
+  <div class="terminal-machine glitch">
+    <div class="screen-title">TERMINAL｜自助登机办理</div>
+    <div class="btn-wrap">
+      <button class="pixel-btn" id="btn-go">约会开始</button>
+      <button class="pixel-btn" id="btn-notsure">我还没想好</button>
+    </div>
+  </div>
+</section>
+
+<!-- 页面3｜填写表单主页 -->
+<section id="page-form" class="page">
+  <div class="form-card">
+    <h3>📅 约会时间</h3>
+    <input type="date" id="date-val">
+    <input type="time" id="time-val" style="margin-top:8px;">
+  </div>
+
+  <div class="form-card">
+    <h3>🎯 约会项目</h3>
+    <div class="item-grid">
+      <div class="item-option" data-val="探险🏜️">探险🏜️</div>
+      <div class="item-option" data-val="小资💸">小资💸</div>
+      <div class="item-option" data-val="甜品🎠">甜品🎠</div>
+      <div class="item-option" data-val="惊喜🎁">惊喜🎁</div>
+      <div class="item-option" data-val="计划表📃">计划表📃</div>
+    </div>
+    <input type="hidden" id="project-val">
+  </div>
+
+  <div class="form-card">
+    <h3>📝 注意事项</h3>
+    <textarea id="note-val" rows="4" placeholder="自行填写注意事项..."></textarea>
+  </div>
+
+  <div class="bottom-actions">
+    <button class="pixel-btn" id="btn-back">返回</button>
+    <button class="pixel-btn" id="btn-submit">我已填写完毕</button>
+  </div>
+</section>
+
+<!-- 页面4｜打印登机牌 -->
+<section id="page-ticket" class="page">
+  <div>
+    <div class="ticket print-anim" id="ticket-card">
+      <h2>登机预约凭证</h2>
+      <div class="ticket-line">⏰ 预约时间：<span id="out-time"></span></div>
+      <div class="ticket-line">🎯 预约项目：<span id="out-project"></span></div>
+      <div class="ticket-line">📝 备注事项：<span id="out-note"></span></div>
+      <br>
+      <div style="text-align:center;font-size:12px;color:#666;">VALID FOR DATE ONLY • PIXEL AIRLINES</div>
+    </div>
+    <button class="pixel-btn download-btn" id="btn-download">下载凭证</button>
+  </div>
+</section>
+
+<script>
+// 页面切换
+const $$ = s => document.querySelector(s);
+const showPage = id => {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  $$(`#${id}`).classList.add('active');
+};
+
+// 音效
+const playBeep = () => {
+  try{
+    const a = new AudioContext();
+    const o = a.createOscillator();
+    const g = a.createGain();
+    o.connect(g);
+    g.connect(a.destination);
+    o.type = "square";
+    o.frequency.value = 880;
+    g.gain.value = 0.08;
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 0.1);
+    o.stop(a.currentTime + 0.1);
+  }catch(e){}
+};
+
+const playClick = () => {
+  try{
+    const a = new AudioContext();
+    const o = a.createOscillator();
+    const g = a.createGain();
+    o.connect(g);
+    g.connect(a.destination);
+    o.type = "square";
+    o.frequency.value = 440;
+    g.gain.value = 0.06;
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 0.05);
+    o.stop(a.currentTime + 0.05);
+  }catch(e){}
+};
+
+const playPrint = () => {
+  try{
+    const a = new AudioContext();
+    const now = a.currentTime;
+    for(let i=0;i<8;i++){
+      const o = a.createOscillator();
+      const g = a.createGain();
+      o.connect(g);
+      g.connect(a.destination);
+      o.type = "square";
+      o.frequency.value = 220 + i*30;
+      g.gain.value = 0.04;
+      o.start(now + i*0.08);
+      g.gain.exponentialRampToValueAtTime(0.001, now + i*0.08 + 0.07);
+      o.stop(now + i*0.08 + 0.07);
+    }
+  }catch(e){}
+};
+
+// 加载页 → 开场页
+setTimeout(() => {
+  playBeep();
+  showPage('page-start');
+}, 2500);
+
+// 乱跳按钮
+const btnNotSure = $$('#btn-notsure');
+btnNotSure.onclick = () => {
+  playClick();
+  const wrap = btnNotSure.parentElement;
+  const w = wrap.clientWidth - btnNotSure.offsetWidth;
+  const h = wrap.clientHeight - btnNotSure.offsetHeight;
+  const x = Math.random() * w;
+  const y = Math.random() * h;
+  btnNotSure.style.position = 'absolute';
+  btnNotSure.style.left = x + 'px';
+  btnNotSure.style.top = y + 'px';
+};
+
+// 约会开始
+$$('#btn-go').onclick = () => {
+  playBeep();
+  $$('.terminal-machine').classList.add('glitch');
+  setTimeout(() => {
+    $$('.terminal-machine').classList.remove('glitch');
+    showPage('page-form');
+  }, 400);
+};
+
+// 约会项目单选
+document.querySelectorAll('.item-option').forEach(el => {
+  el.onclick = () => {
+    playClick();
+    document.querySelectorAll('.item-option').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    $$('#project-val').value = el.dataset.val;
+  };
+});
+
+// 返回
+$$('#btn-back').onclick = () => {
+  playClick();
+  showPage('page-start');
+};
+
+// 提交并打印登机牌
+$$('#btn-submit').onclick = () => {
+  playPrint();
+
+  const date = $$('#date-val').value || '未选择';
+  const time = $$('#time-val').value || '未选择';
+  const proj = $$('#project-val').value || '未选择';
+  const note = $$('#note-val').value.trim() || '无';
+
+  $$('#out-time').textContent = `${date} ${time}`;
+  $$('#out-project').textContent = proj;
+  $$('#out-note').textContent = note;
+
+  showPage('page-ticket');
+};
+
+// 下载登机牌为图片
+$$('#btn-download').onclick = async () => {
+  playClick();
+
+  const card = $$('#ticket-card');
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  const w = 720;
+  const h = 960;
+  canvas.width = w;
+  canvas.height = h;
+
+  ctx.fillStyle = '#fffef2';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(3, 3, w - 6, h - 6);
+
+  ctx.fillStyle = '#ff2a6d';
+  ctx.font = 'bold 16px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillText('✈ TERMINAL AIRWAYS', w / 2, 30);
+
+  ctx.font = 'bold 28px Courier New';
+  ctx.fillStyle = '#ff2a6d';
+  ctx.fillText('登机预约凭证', w / 2, 70);
+
+  ctx.beginPath();
+  ctx.setLineDash([4, 4]);
+  ctx.moveTo(60, 85);
+  ctx.lineTo(w - 60, 85);
+  ctx.strokeStyle = '#444';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle = '#111';
+  ctx.font = '18px Courier New';
+  ctx.textAlign = 'left';
+
+  const lines = [
+    `⏰ 预约时间：${$$('#out-time').textContent}`,
+    `🎯 预约项目：${$$('#out-project').textContent}`,
+    `📝 备注事项：${$$('#out-note').textContent}`
+  ];
+
+  let y = 130;
+  lines.forEach(line => {
+    const words = line.split('：');
+    ctx.fillText(words[0] + '：', 60, y);
+    ctx.fillStyle = '#ff2a6d';
+    ctx.fillText(words[1] || '', 60 + 160, y);
+    ctx.fillStyle = '#111';
+    y += 35;
+  });
+
+  ctx.font = '14px Courier New';
+  ctx.fillStyle = '#666';
+  ctx.textAlign = 'center';
+  ctx.fillText('VALID FOR DATE ONLY • PIXEL AIRLINES', w / 2, h - 40);
+
+  const link = document.createElement('a');
+  link.download = 'terminal-boarding-pass.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+};
+</script>
+
+</body>
+</html>
