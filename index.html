@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>TERMINAL · 登机预约终端</title>
+<title>TERMINAL · 预约终端</title>
 <style>
 *{
   margin:0;
@@ -18,8 +18,6 @@ body{
   overflow:hidden;
   height:100vh;
 }
-
-/* ========== 全局像素工具 ========== */
 .pixel-border{
   border:4px solid #ff2a6d;
   box-shadow:0 0 10px #ff2a6d, inset 0 0 18px rgba(255,42,109,0.25);
@@ -42,8 +40,6 @@ body{
 .pixel-btn:active{
   transform:scale(0.96);
 }
-
-/* ========== 页面容器 ========== */
 .page{
   position:absolute;
   top:0;
@@ -55,8 +51,6 @@ body{
 .page.active{
   display:block;
 }
-
-/* ========== 加载页 ========== */
 #page-loading{
   background:#050508;
   display:flex;
@@ -96,8 +90,6 @@ body{
   margin-bottom:30px;
   letter-spacing:2px;
 }
-
-/* ========== 开场页：TERMINAL 机场自助机 ========== */
 #page-start{
   background:#222;
   display:flex;
@@ -173,8 +165,6 @@ body{
   padding:18px;
   font-size:16px;
 }
-
-/* ========== 表单主页 ========== */
 #page-form{
   padding:20px;
   overflow-y:auto;
@@ -237,8 +227,6 @@ input:focus,textarea:focus,select:focus{
   gap:12px;
   margin-top:24px;
 }
-
-/* ========== 登机牌页 ========== */
 #page-ticket{
   display:flex;
   align-items:center;
@@ -294,8 +282,6 @@ input:focus,textarea:focus,select:focus{
   margin-top:18px;
   width:100%;
 }
-
-/* ========== Glitch 动画｜弱故障版本 ========== */
 .glitch{
   animation:glitch 0.24s steps(6);
 }
@@ -328,8 +314,6 @@ input:focus,textarea:focus,select:focus{
   50%{opacity:0.98;}
   75%{opacity:1;}
 }
-
-/* ========== 响应式 ========== */
 @media(max-width:480px){
   .terminal-machine{
     height:72vh;
@@ -348,38 +332,30 @@ input:focus,textarea:focus,select:focus{
 </style>
 </head>
 <body>
-
 <div class="scanline"></div>
-
-<!-- 页面1｜加载页 -->
 <section id="page-loading" class="page active">
   <div class="pixel-logo">TERMINAL</div>
-  <div class="loading-text">正在启动登机系统...</div>
+  <div class="loading-text">正在启动预约系统...</div>
   <div class="loading-bar">
     <div class="loading-fill"></div>
   </div>
 </section>
-
-<!-- 页面2｜机场自助机开场 -->
 <section id="page-start" class="page">
   <div class="jwa-bg crt-flicker"></div>
   <div class="terminal-machine glitch">
-    <div class="screen-title">TERMINAL｜自助登机办理</div>
+    <div class="screen-title">TERMINAL｜自助预约办理</div>
     <div class="btn-wrap">
       <button class="pixel-btn" id="btn-go">约会开始</button>
       <button class="pixel-btn" id="btn-notsure">我还没想好</button>
     </div>
   </div>
 </section>
-
-<!-- 页面3｜填写表单主页 -->
 <section id="page-form" class="page">
   <div class="form-card">
     <h3>📅 约会时间</h3>
     <input type="date" id="date-val">
     <input type="time" id="time-val" style="margin-top:8px;">
   </div>
-
   <div class="form-card">
     <h3>🎯 约会项目</h3>
     <div class="item-grid">
@@ -391,23 +367,19 @@ input:focus,textarea:focus,select:focus{
     </div>
     <input type="hidden" id="project-val">
   </div>
-
   <div class="form-card">
     <h3>📝 注意事项</h3>
     <textarea id="note-val" rows="4" placeholder="自行填写注意事项..."></textarea>
   </div>
-
   <div class="bottom-actions">
     <button class="pixel-btn" id="btn-back">返回</button>
     <button class="pixel-btn" id="btn-submit">我已填写完毕</button>
   </div>
 </section>
-
-<!-- 页面4｜打印登机牌 -->
 <section id="page-ticket" class="page">
   <div>
     <div class="ticket print-anim" id="ticket-card">
-      <h2>登机预约凭证</h2>
+      <h2>预约凭证</h2>
       <div class="ticket-line">⏰ 预约时间：<span id="out-time"></span></div>
       <div class="ticket-line">🎯 预约项目：<span id="out-project"></span></div>
       <div class="ticket-line">📝 备注事项：<span id="out-note"></span></div>
@@ -417,16 +389,13 @@ input:focus,textarea:focus,select:focus{
     <button class="pixel-btn download-btn" id="btn-download">下载凭证</button>
   </div>
 </section>
-
 <script>
-// 页面切换
 const $$ = s => document.querySelector(s);
 const showPage = id => {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   $$(`#${id}`).classList.add('active');
 };
-
-// 音效
+// === 音效函数：只在【用户点击交互】时调用，加载阶段绝不执行 ===
 const playBeep = () => {
   try{
     const a = new AudioContext();
@@ -442,7 +411,6 @@ const playBeep = () => {
     o.stop(a.currentTime + 0.1);
   }catch(e){}
 };
-
 const playClick = () => {
   try{
     const a = new AudioContext();
@@ -458,7 +426,6 @@ const playClick = () => {
     o.stop(a.currentTime + 0.05);
   }catch(e){}
 };
-
 const playPrint = () => {
   try{
     const a = new AudioContext();
@@ -477,14 +444,11 @@ const playPrint = () => {
     }
   }catch(e){}
 };
-
-// 加载页 → 开场页
+// 🔥【最重要改动：定时器里只做页面跳转！不再自动播放音效！】
 setTimeout(() => {
-  playBeep();
   showPage('page-start');
 }, 2500);
 
-// 乱跳按钮
 const btnNotSure = $$('#btn-notsure');
 btnNotSure.onclick = () => {
   playClick();
@@ -497,8 +461,6 @@ btnNotSure.onclick = () => {
   btnNotSure.style.left = x + 'px';
   btnNotSure.style.top = y + 'px';
 };
-
-// 约会开始
 $$('#btn-go').onclick = () => {
   playBeep();
   $$('.terminal-machine').classList.add('glitch');
@@ -507,8 +469,6 @@ $$('#btn-go').onclick = () => {
     showPage('page-form');
   }, 400);
 };
-
-// 约会项目单选
 document.querySelectorAll('.item-option').forEach(el => {
   el.onclick = () => {
     playClick();
@@ -517,59 +477,42 @@ document.querySelectorAll('.item-option').forEach(el => {
     $$('#project-val').value = el.dataset.val;
   };
 });
-
-// 返回
 $$('#btn-back').onclick = () => {
   playClick();
   showPage('page-start');
 };
-
-// 提交并打印登机牌
 $$('#btn-submit').onclick = () => {
   playPrint();
-
   const date = $$('#date-val').value || '未选择';
   const time = $$('#time-val').value || '未选择';
   const proj = $$('#project-val').value || '未选择';
   const note = $$('#note-val').value.trim() || '无';
-
   $$('#out-time').textContent = `${date} ${time}`;
   $$('#out-project').textContent = proj;
   $$('#out-note').textContent = note;
-
   showPage('page-ticket');
 };
-
-// 下载登机牌为图片
 $$('#btn-download').onclick = async () => {
   playClick();
-
   const card = $$('#ticket-card');
-
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-
   const w = 720;
   const h = 960;
   canvas.width = w;
   canvas.height = h;
-
   ctx.fillStyle = '#fffef2';
   ctx.fillRect(0, 0, w, h);
-
   ctx.strokeStyle = '#222';
   ctx.lineWidth = 6;
   ctx.strokeRect(3, 3, w - 6, h - 6);
-
   ctx.fillStyle = '#ff2a6d';
   ctx.font = 'bold 16px Courier New';
   ctx.textAlign = 'center';
   ctx.fillText('✈ TERMINAL AIRWAYS', w / 2, 30);
-
   ctx.font = 'bold 28px Courier New';
   ctx.fillStyle = '#ff2a6d';
-  ctx.fillText('登机预约凭证', w / 2, 70);
-
+  ctx.fillText('预约凭证', w / 2, 70);
   ctx.beginPath();
   ctx.setLineDash([4, 4]);
   ctx.moveTo(60, 85);
@@ -578,17 +521,14 @@ $$('#btn-download').onclick = async () => {
   ctx.lineWidth = 2;
   ctx.stroke();
   ctx.setLineDash([]);
-
   ctx.fillStyle = '#111';
   ctx.font = '18px Courier New';
   ctx.textAlign = 'left';
-
   const lines = [
     `⏰ 预约时间：${$$('#out-time').textContent}`,
     `🎯 预约项目：${$$('#out-project').textContent}`,
     `📝 备注事项：${$$('#out-note').textContent}`
   ];
-
   let y = 130;
   lines.forEach(line => {
     const words = line.split('：');
@@ -598,18 +538,15 @@ $$('#btn-download').onclick = async () => {
     ctx.fillStyle = '#111';
     y += 35;
   });
-
   ctx.font = '14px Courier New';
   ctx.fillStyle = '#666';
   ctx.textAlign = 'center';
   ctx.fillText('VALID FOR DATE ONLY • PIXEL AIRLINES', w / 2, h - 40);
-
   const link = document.createElement('a');
-  link.download = 'terminal-boarding-pass.png';
+  link.download = 'terminal-booking-pass.png';
   link.href = canvas.toDataURL('image/png');
   link.click();
 };
 </script>
-
 </body>
 </html>
